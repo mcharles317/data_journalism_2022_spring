@@ -80,21 +80,28 @@ wv_undisbursed %>%
 ```
 
 **Q3** What are some potential reasons why a loan might not be paid out? What questions does that circumstance raise for you?
-**A3** [write your answer here]
+**A3** [The vendor did not have sufficient funds to fulfill their loan]
 
 
 **Q4** Which month in 2021 had the most loans approved?
-**A4** [write your answer here]
+**A4** [March]
 
 ```{r}
-# Write the code to produce your answer here
+west_virginia_ppp %>%
+mutate(Month = floor_date(date_approved, "month")) %>%
+  group_by(Month) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total))
 
 ```
 
 **Q5** How many loans went to West Virginia applicants that listed the maximum number of jobs retained (500)? Which one had the earliest approved date?
-**A5** [write your answer here]
+**A5** [ 58 Loans
+J. Austin Heating and Cooling INC.]
 
 ```{r}
-# Write the code to produce your answer here
+west_virginia_ppp %>%
+  filter(jobs_retained == 500)  %>%
+  arrange(date_approved)
 
 ```
