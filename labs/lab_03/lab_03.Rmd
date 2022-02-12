@@ -1,0 +1,131 @@
+---
+title: "lab_03"
+author: "sean mussenden"
+date: "8/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse here
+library(tidyverse)
+library(lubridate)
+
+# Load janitor here
+library(janitor)
+```
+
+## Load data
+```{r}
+west_virginia_ppp <- read_rds("lab_03.rds")
+
+```
+
+## Answer questions
+
+Q1: Which five cities located in Kanawha County, West Virginia, got the largest _number_ of loans? How many did each get? To answer this question, you'll have to clean the very messy "city" field.
+
+Note: To answer this question, you'll need to see every variation of the "city" column in Kanawha County, and then fully clean the city field for those cities. Hint: once cleaned, the dataframe that counts the number of loans by city should have 38 distinct cities for Kanawha County.
+
+A1: Charleston (2802), South Charleston (478), Saint Albans (296), Dunbar(162), Nitro (140)
+```{r}
+
+# Write your code in this codeblock.
+clean_wv_ppp_loans <- west_virginia_ppp %>% filter (project_county_name =="KANAWHA") %>%
+  clean_names() %>% 
+  mutate(amount = as.numeric(amount)) %>% 
+distinct() %>% 
+  mutate(city = str_to_title(city)) %>% 
+  mutate(city = case_when(
+    city == "Balle" ~ "Belle",
+    city == "Charelston" ~ "Charleston",
+    city == "Crosslanes" ~ "Cross Lanes",
+    city == "Elkveiw" ~ "Elkview",
+    city == "S Charleston" ~ "South Charleston",
+    city == "So Charleston" ~ "South Charleston",
+    city == "St Albans" ~ "Saint Albans",
+    city == "St.albans" ~ "Saint Albans",
+    city == "St. Albans" ~ "Saint Albans",
+    TRUE ~ city
+  ))
+clean_wv_ppp_loans %>%
+  group_by(city) %>% 
+  summarise(total=n()) %>% 
+  arrange(desc(total))
+
+
+
+```
+
+Q2: Find the 5-digit ZIP code in West Virginia that had the highest total amount of loans (by dollar value). What is the name of the business that got the largest loan (by dollar value) in that zip code? Write up a short paragraph that also answers these questions:
+
+* Where in West Virginia is this ZIP code located?
+* How much was the business' loan for?
+* How much of that loan was forgiven?
+* Which number is bigger, the loan amount or the forgiveness amount? Can you explain the discrepancy?
+
+A2: Kanawha County, 25301, had the highest amount of loans by dollar value. The business that received that loan was The Eye and Ear Clinic of Charleston DBA Charleston Surgical at a value of $1,520,007 with a forgiveness amount of $1,538,254.68.
+
+The reason for this discrepancy is likely that the loan gained interest and then was forgiven.
+
+
+```{r}
+clean_wv_ppp_loans%>% 
+  distinct() %>%
+  mutate(zip = str_sub(zip, start=1L, end=5L)) %>% 
+  group_by(zip) %>% 
+  summarise(total_loans_amount = sum(amount)) %>% 
+  arrange(desc(total_loans_amount))
+
+wv_top_zip <- clean_wv_ppp_loans %>% 
+  filter(zip == "25301") %>% 
+  arrange(desc(amount))
+
+wv_top_zip
+
+```
+
+Q3: Five business entities owned by the spouse of a member of West Virginia's U.S. House delegation got PPP loans. Write up a paragraph that answers the following questions.   
+
+  * What are the businesses' names?
+  * What do the businesses do?
+  * How much money did the five businesses receive in total?
+  * What percentage of the total loan amount have been forgiven?
+  * How did the U.S. House member vote on the legislation initially author zing the PPP loan program.
+
+Feel free to add any interesting "color" (little interesting details) you find in your research.  
+
+Some hints to help you answer this question:
+
+* West Virginia's three U.S. House members are listed [here](https://www.govtrack.us/congress/members/WV#representatives)
+* To find businesses they or their families own, you can search for financial disclosure forms for U.S. House members [here](https://disclosures-clerk.house.gov/PublicDisclosure/FinancialDisclosure#Search).
+  * To speed things up, here are direct links to the three U.S. House members most recent financial disclosures, which I found by searching the site linked above.
+  * [Rep. 1](https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2020/10042042.pdf)
+  * [Rep. 2](https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2020/10040330.pdf)
+  * [Rep. 3](https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2020/10042734.pdf)
+* When you examine the disclosure forms, there may be lots of stock sales and retirement accounts mixed in.  Ignore those. In the table in the disclosure forms, look for "Partnership" or "C-Corp" in the column named "Income Type"
+* This is a link to details on passage of the [CARES ACT](https://www.congress.gov/bill/116th-congress/house-bill/748). You can find a link to how the House voted by clicking on a link from [this page](https://www.congress.gov/bill/116th-congress/house-bill/748/actions).
+
+A3: 
+The businesses names are Dutch Miller Chevrolet, Dutch Miller of Charleston, Dutch Miller of Charlotte, Dutch Miller Subaru and DM Motors. These businesses are car dealerships.In total, these businesses received a total loan amount of $3,105,300 and 101.132% of the loan was forgiven. Regarding voting on the legislation, Congresswoman Carol Miller voted in favor of the CARES act which would help the cause for the PPP loan program. 
+
+    
+
+```{r}
+wv_rep<-west_virginia_ppp%>%
+filter(
+ str_detect(name,"^DUTCH M|^DM "))
+
+wv_rep%>%
+ mutate(total_amount = sum(amount), total_fogiveness = sum(forgiveness_amount))%>%
+mutate(percent_forgiven = (total_fogiveness/total_amount)*100)
+
+wv_rep
+```
