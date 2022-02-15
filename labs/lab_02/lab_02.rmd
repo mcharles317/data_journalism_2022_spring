@@ -39,7 +39,7 @@ Let's keep working with West Virginia loans contained in the PPP loans data.
 **Task** Run the codeblock below to load the data.
 
 ```{r}
-west_virginia_ppp <- read_rds("data/lab_02.rds")
+west_virginia_ppp <- read.rds("lab_03.rds")
 ```
 
 ## Examine Data
