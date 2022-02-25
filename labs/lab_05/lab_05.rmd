@@ -166,5 +166,20 @@ berkeley_naics <-clean_berkeley %>% left_join(naics, by ="naics_code")
 
 Hint: you will not find the answers to the last three questions in the data.  You could call them directly to get that information, but I don't want you to do that for this assignment.  Instead, do some web research. I would start by Googling the company name from the data and looking at the page that comes up for the business from at http://apps.sos.wv.gov/. I would use information I found on that page and use info about the company from Google, the [Wayback machine](https://archive.org/web/) (which lets you look at older versions of a company's website), Yelp, and Facebook.
 
-**A5.**]
+**A5.**
+-COTTLE CHRISTI L LLC
+- 280434.00	
+- 2021-02-17	
+- 94 Jobs Retained
+- Kitzie's Resteraunt and Lounge
+- 2 Locations, Spring Mills and Martinsburg
+- Yes, Kitzie's in Inwood closed during the pandemic
 
+
+```{r}
+berkeley_naics%>% 
+  filter(city == "Martinsburg") %>%
+  filter(title =="Full-Service Restaurants") %>% 
+  arrange(desc(amount))
+
+```
