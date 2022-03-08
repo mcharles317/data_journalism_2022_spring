@@ -25,6 +25,8 @@ summarise(count=n())%>%
 arrange(desc(count))
 ```
 
+9 different Officers, above rank Captain, had 3 or more substantiated allegations, 7 are white
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
