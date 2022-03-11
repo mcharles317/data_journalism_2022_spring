@@ -18,16 +18,45 @@ allegations <- read_csv("Complaints/allegations.csv")
 ```
 ```{r}
 substantiated<- allegations %>% 
- filter(rank_now =="Chiefs and other ranks") %>% 
+ filter(rank_now =="Chiefs and other ranks" |rank_now == "Deputy Inspector" |rank_now == "Inspector") %>% 
+filter(str_detect(board_disposition, "^Subst")) %>% 
+group_by(first_name, last_name) %>% 
+summarise(count=n())%>% 
+arrange(desc(count))
+```
+“A dozen of those high-ranking officers have three or more complaints with substantiated allegations; 10 are white. Five have reached the rank of deputy inspector, the lowest promoted at the commissioner’s discretion; all are white.” 
+
+Our data showed that 9 different Officers, above rank Captain, had 3 or more substantiated allegations, 7 are white.
+
+
+
+
+Sentence 2: "But many of the officers also said that it’s possible to be an effective cop without so many complaints. An overwhelming majority of the city’s 36,000 officers do not have a single substantiated complaint on their records; only 1 in 9 does.” 
+
+We concluded that 3,958 officers have received a single substantiated complaint. According to the NYPD website, the department has 36,000 officers. Based on these numbers, a discrepency of 1:9 is accurate. 
+
+```{r}
+allegations %>% 
 filter(str_detect(board_disposition, "^Subst")) %>% 
 group_by(first_name, last_name) %>% 
 summarise(count=n())%>% 
 arrange(desc(count))
 ```
 
-9 different Officers, above rank Captain, had 3 or more substantiated allegations, 7 are white
 
 
+
+Sentence 3:“Eighty-six of the roughly 420 officers in the department who currently hold a rank above captain — running precincts and other large commands and overseeing hundreds of officers — have tallied at least one misconduct allegation that was substantiated by the CCRB, meaning that investigators amassed enough evidence of offenses, ranging from bad language to pistol whippings, to say that they happened and broke patrol guidelines. The most common involved improper property entries and searches.” 
+
+We concluded that 81 officers who hold a rank above captain, have received a substantiated complaint. This is in contradiction with the data and cannot be varified with the information provided. 
+```{r}
+substantiated<- allegations %>% 
+ filter(rank_now =="Chiefs and other ranks" |rank_now == "Deputy Inspector" |rank_now == "Inspector") %>% 
+filter(str_detect(board_disposition, "^Subst")) %>% 
+group_by(first_name, last_name) %>% 
+summarise(count=n())%>% 
+arrange(desc(count))
+```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
