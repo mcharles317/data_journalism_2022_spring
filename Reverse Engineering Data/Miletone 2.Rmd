@@ -36,7 +36,7 @@ Sentence 2: "But many of the officers also said that it’s possible to be an ef
 We concluded that 3,958 officers have received a single substantiated complaint. According to the NYPD website, the department has 36,000 officers. Based on these numbers, a discrepency of 1:9 is accurate. 
 
 ```{r}
-allegations %>% 
+  allegations %>% 
 filter(str_detect(board_disposition, "^Subst")) %>% 
 group_by(first_name, last_name) %>% 
 summarise(count=n())%>% 
@@ -57,6 +57,31 @@ group_by(first_name, last_name) %>%
 summarise(count=n())%>% 
 arrange(desc(count))
 ```
+Sentence 4
+"“Of at least 77 allegations made against him in 26 separate CCRB complaints, 29 were unsubstantiated; five were “unfounded,” meaning investigators concluded the incident never took place; and 27 were “exonerated,” meaning the conduct fell within patrol guidelines. Investigators have never proved that McCormack strip-searched men in the street, let alone penetrated them with his finger, though the city settled four lawsuits involving strip-search allegations against him for a total $184,500.”
+
+We concluded that Christopher Mccormack had 27 exonerated complaints, 13 substantianed and charged comlpaints, 2 substantiated command discipline complaints and 29 unsubstantiated comlpaints. Unfounded complaints were removed from the data.
+```{r}
+allegations %>% 
+ filter(first_name=="Christophe"& last_name=="Mccormack") %>% 
+  group_by(board_disposition) %>% 
+  summarise(count=n())
+  
+
+```
+Sentence 5
+"The investigator substantiated all 10 allegations of “abuse of authority,” including improper searches, threats of arrest and McCormack’s refusal to provide his badge number."
+We concluded that McCormack did indeed have 10 allegations of abuse of authority while at the rank of Sargeant. 
+```{r}
+allegations %>% 
+   filter(first_name == "Christophe") %>% 
+filter(last_name == "Mccormack") %>% 
+  filter(str_detect(board_disposition, "^Subst")) %>% 
+  filter(fado_type == "Abuse of Authority") %>% 
+  filter(rank_incident == "Sergeant")
+
+```
+
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
