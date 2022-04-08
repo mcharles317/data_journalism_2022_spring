@@ -115,9 +115,16 @@ percent_kabbage <- combined %>%
 county_fips <- read_csv("data/county_fips.csv")
 ```
 ```{r}
-md_fips <- md_fips %>% mutate(fips_code = str_c(state_code, county_code))
+kabbage_test <-percent_kabbage %>%
+  rename(state=project_state, match_county=project_county_name)
 
+fips_combined <- kabbage_test %>% 
+  left_join(county_fips, by=c('state','match_county'))
+
+write_csv(fips_combined, "data/fips_combined.csv")
 ```
+```
+
 4. Load the `county_fips.csv` file in the data folder into a dataframe.
 5. Join the combined counties data with the fips data, again specifying the join columns and saving it to a new dataframe.
 
@@ -127,3 +134,6 @@ md_fips <- md_fips %>% mutate(fips_code = str_c(state_code, county_code))
 8. In the answer space below, provide the URL for your published map and then describe where Kabbage loans are and are not found. Where are they more common? Look specifically at Florida in the data: are there counties on the map where no data is displayed? Why?
 
 **A3.**  
+https://datawrapper.dwcdn.net/K66w7/1/
+
+Based on the map, many states and counties throughout the mid-west are missing kabbage loans. California also appears to be missing a significant amount of kabbage loans. They appear to be most common in the south east, with states such as Florida and Georgia recieiving a healthy amount of loans. Regarding missing counties in Florida, this is due to inconsistencies in the data including changes in syntax and county spellings that led to missing data.  
