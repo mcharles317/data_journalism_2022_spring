@@ -181,7 +181,7 @@ This county shapefile has all 3233 U.S. counties.  We only want the Maryland cou
 **Answer**
 Filters the data to match state FIPS codes. All Maryland counties have a fips code that begins with "24."
 ```{r}
-md_counties <- counties %>%
+md_counties <- counties() %>%
   filter(STATEFP == "24")
 
 ```
@@ -256,6 +256,7 @@ library(tidyverse)
 library(sf)
 library(janitor)
 library(tidycensus)
+library(tigris)
 #census_api_key("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
 
 ```
@@ -309,7 +310,7 @@ This code shows county population. It can be later compared to the number of bed
 
 md_county_population <- get_acs(geography = "county", 
               variables = c(population = "B01001_001"), 
-              state = "MD")
+              state = "WV")
 
 md_county_population
 ```
