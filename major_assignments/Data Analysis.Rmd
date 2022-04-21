@@ -1,0 +1,33 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+```
+```{r}
+board_games_20 <- read_csv("/Users/mikecharles/Downloads/games/2020-08-19.csv")
+board_games_21 <- read_csv("/Users/mikecharles/Downloads/games/2022-01-08.csv")
+detailed_games <- read_csv("/Users/mikecharles/Downloads/games/games_detailed_info.csv")
+bgg_15 <- read_csv("/Users/mikecharles/Downloads/games/bgg-15m-reviews.csv")
+bgg_19 <- read_csv("/Users/mikecharles/Downloads/games/bgg-19m-reviews.csv")
+```
+```{r}
+users_19 <- bgg_19%>% 
+  group_by(user) %>% 
+  summarise(avg_rating = mean(rating), reviews = n()) %>% 
+  arrange(desc(avg_rating), desc(reviews))
+
+```
+Question 1: Do certain users give specifically good or specifically bad reviews? We filtered all users and found the average rating they gave certain games to determine if certain users were prone to more positive or negative reviews. We also counted how many reviews each specific user gave. 
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
