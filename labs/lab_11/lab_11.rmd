@@ -42,7 +42,7 @@ WV_PPP <- read_rds("data/lab_11.rds")
 
 ```{r}
  county_loan <-newPPP%>% 
-  group_by(project_county_name) %>% 
+  _by(project_county_name) %>% 
   summarise(total_loans=n(), loan_amount = sum(amount))%>% 
   arrange(desc(total_loans))
 

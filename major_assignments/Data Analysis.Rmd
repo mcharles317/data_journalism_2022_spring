@@ -27,6 +27,51 @@ users_19 <- bgg_19%>%
 Question 1: Do certain users give specifically good or specifically bad reviews? We filtered all users and found the average rating they gave certain games to determine if certain users were prone to more positive or negative reviews. We also counted how many reviews each specific user gave. 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
+We've created two dataframes that contain board game rankings from 2020 and 2021. They each contain the game ranking, its average score, and the year it came out. Other data available describes the games in detail, including a brief summary of the game itself. That last set will allow us to find patterns in games based on their genre. The dataframes based on 2020 and 2021 have 10 columns and 19,330 and 21,831 rows respectively -- off the bat we should be mindful of that and know it won't be a perfect comparison between two years. Although there's some basis for comparison, because we don't have access to many years before the pandemic, it might be difficult to answer the question about how COVID-19 has impacted game choice. We also have the data for specific game reviews -- literal comments people have left about the games. That's maybe not the most helpful from a data analysis perspective, but once we have more information about which games are popular, it would be helpful to have that anecdotal evidence to determine why.
+
+
+```{r}
+board_games_20 <- board_games_20 %>%
+  mutate(data_year =2020) %>%
+  group_by(Name) %>%
+  arrange(Rank) %>%
+  head(100)
+
+board_games_21 <- board_games_21 %>%
+  mutate(data_year =2021) %>%
+  group_by(Name) %>%
+  arrange(Rank) %>%
+  head(100)
+
+compare_20_21 <-
+  bind_rows(board_games_20,board_games_21)
+
+
+compare_20_21 <- compare_20_21 %>%
+  select(Name, Rank, data_year)%>%
+  pivot_wider(names_from = data_year, values_from = Rank)
+
+
+users_19 <- bgg_19%>%
+  group_by(user) %>%
+  summarise(avg_rating = mean(rating), reviews = n()) %>%
+  arrange(desc(avg_rating), desc(reviews))
+```
+
+## Some questions answered by this code
+
+1. What were the top 10 games of 2020 and 2021?
+2020: Gloomhaven, Pandemic Legacy: Season 1, Brass: Birmingham, Terraforming Mars, Twilight Imperium (Fourth Edition), Through the Ages: A New Story of Civilization, Gaia Project, Star Wars: Rebellion, Twilight Struggle, Great Western Trail
+
+2021: Gloomhaven, Pandemic Legacy: Season 1, Brass: Birmingham, Terraforming Mars, Twilight Imperium: Fourth Edition, Gloomhaven: Jaws of the Lion, Gaia Project, Star Wars: Rebellion, Through the Ages: A New Story of Civilization, War of the Ring: Second Edition
+
+2. Of the top 100 games 2021, how many were new to the list (i.e., did not appear on the 2020 top 100 list)?
+
+14. Note: We think the way to look at this would be to filter by is.na, but we couldn't quite get that code to work, so this is based on a 114 row dataframe for the comparison.
+
+3. Do certain users give specifically good or specifically bad reviews?
+
+We filtered all users and found the average rating they gave certain games to determine if certain users were prone to more positive or negative reviews. We also counted how many reviews each specific user gave. The average rating by all of the users who left 100 or more reviews was 10.
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
