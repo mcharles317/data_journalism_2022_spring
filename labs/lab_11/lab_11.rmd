@@ -78,7 +78,7 @@ Then produce a choropleth map that shows West Virginia counties shaded according
 Use the magma color palette, and shade on a "log" scale. Also produce a table that shows the total amount of loans per 100,000 population for each county, ranked from highest to lowest, along with the total amount of loans and the total number of loans.
 ```{r}
 ggplot() + 
-  geom_sf(data=wv_loans_100k, aes(fill=loans_per_100k)) + 
+  geom_sf(data=me_loans_100k, aes(fill=loans_per_100k)) + 
   theme_minimal()+
   scale_fill_viridis_b(option="magma",trans = "log") 
 
