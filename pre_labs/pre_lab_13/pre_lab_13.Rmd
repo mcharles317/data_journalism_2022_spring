@@ -184,6 +184,7 @@ A t-test can help us answer that question.  It can tell us where there's a stati
 ### Task 9: Run t-test
 **Task** Run the following code. Describe the output. What do you see?
 **Answer**
+This data is used to basically determine the probability/ correlation of a particular event. It is often used in science experiments to determine if changes are based on the experiment itself or the actual things being tested. In this case, it shows the discrepency between CLinton and Trump voters in terms of average ppe amount per employee.
 ```{r}
 t.test(ppe_amount_per_employee ~ vote_2016, data = reveal_data)
 ```
@@ -194,6 +195,7 @@ Let's try the percentage of businesses getting ppp loans.
 ### Task 10: Run t-test
 **Task** Run the following code. Describe the output. What do you see?
 **Answer**
+ In this case, it shows the discrepency between CLinton and Trump voters in terms of businesses receiving PPP loans.
 ```{r}
 t.test(businesses_receiving_ppe_pct ~ vote_2016, data = reveal_data)
 ```
