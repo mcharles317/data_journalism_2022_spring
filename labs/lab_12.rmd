@@ -61,8 +61,20 @@ wvu_incident <-last_month %>%
 total <-wvu_incident %>% 
   nrow()
 
-description <- paste("The most recent vehicle accidents on WVU's campus", format(wvu_incidentt$title, format="%B %d"), " ", direction, " by ", changetext, "total incidents of this crime", sep="")
-sub)
+
+
+```
+```{r}
+assist_police <- WVU_crime %>% 
+filter(title == latest$title) %>%
+  filter(date >= latest$date - 30) %>%
+  summarise(count = n())
+
+description <- paste("The most recent crime incident on WVU's campus on ", format(latest$date, format="%B %d"), " was ", latest$title, ".", " There were ", assist_police$count, " total incidents of this crime.", sep="")
+
+description
+```
+Are these crimes common? What causes them to occur?
 ```
 
 
@@ -76,6 +88,7 @@ Then write code that will construct a paragraph about the data described above c
 Put your sentence in the answer below, along with one other question you could ask of this data.
 
 **A1.**
+"The most recent crime incident on WVU's campus on April 21 was ASSIST POLICE POLICE. There were 3 total incidents of this crime."
 
 ```{r}
 ```
@@ -98,7 +111,17 @@ Google the top 2-3 zip codes from both Maryland and non-Maryland results and des
 **A2.**
 
 ```{r}
+vaccine_zip <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/Vax_ZIP_CODE_FirstSecondSingle_Totals_Raw.csv")
+
+vaccine_zip <- vaccine_zip %>% 
+clean_names() %>% 
+mutate(today = today())
+
+vaccine_zipcode <- vaccine_zip %>% 
+drop_na(fully_vaccinated) %>% 
+mutate(zip_code = str_sub(zip_code, 1, 5))
 ```
+
 
 **Q3.** Maryland has had one of the more successful vaccination rates, but you want to understand where a significant portion of the population remains less than fully vaccinated. Make a dataframe of all Maryland zip codes from the vaccination data you used in Q2 and join it to Maryland zip code population data from the Census API. Calculate the percentage of fully vaccinated for each zip code and then make a map showing the zip codes with less than 50 percent fully vaccinated. Put a blank map with the outline of Maryland counties (which you can get from Tigris) behind it for context. Add a label to the map describing what the data is and include the date from the vaccination data (programmatically, so you can run it every day).
 
