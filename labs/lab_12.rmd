@@ -109,6 +109,11 @@ To do that, you will need to:
 Google the top 2-3 zip codes from both Maryland and non-Maryland results and describe them in your answer.
 
 **A2.**
+20906, Silver Spring had the most full vaccinations in Maryland
+20655, A zipcode in Baltimore City, is tied for the least full vaccinations
+20011 Brightwood park had one of the highest total of fully vaccinated zip codes outside of Maryland
+17331, Hanover Pennsylvania appears to be one of the lone zip codes in the top of total vaccinations that isnt in the DC.
+
 
 ```{r}
 vaccine_zip <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/Vax_ZIP_CODE_FirstSecondSingle_Totals_Raw.csv")
@@ -119,7 +124,25 @@ mutate(today = today())
 
 vaccine_zipcode <- vaccine_zip %>% 
 drop_na(fully_vaccinated) %>% 
-mutate(zip_code = str_sub(zip_code, 1, 5))
+mutate(zip_code = str_sub(zip_code, 1, 5)) %>% 
+mutate(zip_code = as.numeric(zip_code)) %>%
+  filter(zip_code > 9999)
+
+maryland_zip <- vaccine_zipcode %>%
+  filter(zip_code >= 20588 & zip_code <= 21930) %>%
+  arrange(desc(fully_vaccinated))
+
+non_md_zip <- vaccine_zipcode %>%
+  filter(zip_code < 20588 | zip_code > 21930) %>%
+  arrange(desc(fully_vaccinated))
+
+file_name <- paste("maryland_zip_", str_replace_all(today(), "-", ""), ".csv",  sep="")
+
+write_csv(maryland_zip, file_name)
+
+file_name_2 <- paste("non_maryland_zip_", str_replace_all(today(), "-", ""), ".csv",  sep="")
+
+write_csv(non_md_zip, file_name_2)
 ```
 
 
@@ -130,6 +153,35 @@ You WILL need to ensure that the columns you use to join the two dataframes are 
 Describe the output of the map below, and say what you think the most interesting areas are.
 
 **A3.**
-
+A majority of places with high vaccination rates do not appear to be in the middle of the state. In fact, they appear to be lining the perimter of the state, specifcally grouped into the North West and North East corners of the state. 
 ```{r}
+md_zip_population <- get_acs(geography = "zcta",
+              variables = c(population = "B01001_001"),
+              state = "MD",
+              geometry = TRUE)
+
+md_zip_code_and_pop <- md_zip_population %>%
+  mutate(GEOID = as.numeric(GEOID)) %>%
+  left_join(maryland_zip, by=c("GEOID"="zip_code"))
+           
+           
+md_zip_code_and_pop <- md_zip_code_and_pop %>%
+  mutate(percentage_fully_vax = fully_vaccinated/estimate*100)
+
+#% formula
+
+less_fifty_percent <- md_zip_code_and_pop %>%
+  filter(percentage_fully_vax < 50)
+ 
+#new dataframe filter(percentage of fully vax < 50%)
+
+counties <- counties()
+
+md_counties <- counties %>%
+  filter(STATEFP == "24")
+
+ggplot() +
+  geom_sf(data=md_counties) +
+  geom_sf(data=less_fifty_percent, aes(fill=percentage_fully_vax)) +
+  theme_minimal()
 ```
