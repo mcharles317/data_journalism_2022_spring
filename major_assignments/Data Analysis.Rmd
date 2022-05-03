@@ -57,7 +57,13 @@ users_19 <- bgg_19%>%
   summarise(avg_rating = mean(rating), reviews = n()) %>%
   arrange(desc(avg_rating), desc(reviews))
 ```
-
+```{r}
+users_19 <- bgg_19%>%
+  group_by(user) %>%
+  summarise(avg_rating = mean(rating), reviews = n()) %>%
+  arrange(desc(reviews)) %>% 
+   head(10)
+```
 ## Some questions answered by this code
 
 1. What were the top 10 games of 2020 and 2021?
