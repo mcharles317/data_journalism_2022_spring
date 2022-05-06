@@ -63,6 +63,10 @@ users_19 <- bgg_19%>%
   summarise(avg_rating = mean(rating), reviews = n()) %>%
   arrange(desc(reviews)) %>% 
    head(10)
+
+user_avg <- users_19 %>% 
+  summarise(avg = mean(avg_rating), avg_reviews =mean(reviews))
+  
 ```
 ## Some questions answered by this code
 
@@ -76,6 +80,10 @@ users_19 <- bgg_19%>%
 14. Note: We think the way to look at this would be to filter by is.na, but we couldn't quite get that code to work, so this is based on a 114 row dataframe for the comparison.
 
 3. Do certain users give specifically good or specifically bad reviews?
+Based on the data we found, it appears that many users give a review of 10 as a default answer. This is interesting because, speaking from a personal perspective, I would be more likely to leave a negative review than a positive review. However, based on this data, indiviudals are likely most like to give a 10/10 review, regardless of how many reviews they leave. 
+
+4. What was the average review score of indivudals in the top 10 of this data set for number of reviews given?
+  - 6.71409, which is interesting. This average is also correlated to the average number of reviews by individuals in the top 10, which was 5187.8. 
 
 We filtered all users and found the average rating they gave certain games to determine if certain users were prone to more positive or negative reviews. We also counted how many reviews each specific user gave. The average rating by all of the users who left 100 or more reviews was 10.
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
