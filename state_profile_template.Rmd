@@ -1,0 +1,230 @@
+---
+title: "state_profile"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+install.packages("ggrepel")
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(ggrepel)
+library(sf)
+library(tigris)
+```
+```{r}
+mainePPP <- read_csv ("/Users/mikecharles/Downloads/maine_ppp.csv") 
+
+#census_api_key("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
+
+mainePPP <- mainePPP %>% 
+    mutate(project_city = str_to_title(project_city))
+
+```
+
+## PPP State Profile
+
+Your assignment is to explore a dataset of PPP loan applications for a particular state and to answer a series of questions that will help you summarize that state's loan applications. You will need to write R code to answer those questions. You also will bring in other data, including Census information, and you will be making graphics, including maps, to illustrate your findings.
+
+The deliverable will be this R Markdown notebook and a data folder that you will receive with a state's loan application data. Place any other data you are using to answer the questions in the same data folder.
+
+## Load libraries and establish settings
+
+**Task** Create a codeblock and load appropriate packages and settings for this assignment.
+
+## Initial Exploration
+
+**Q1.**. Write R code that generates some basic descriptive statistics that allows you to describe the applications from your state. This code should produce results that describe the data in different ways: how many applications there are, along with ways to understand the typical and most frequent values for columns you find interesting or newsworthy. You should produce at least five (5) descriptive statistics and write up a summary of the data using them.
+
+**A1.** 
+```{r}
+Mcounties <- mainePPP %>% 
+  group_by(project_county_name) %>% 
+  summarise(total=n(), total_loans=n(), total_loan_amounts = sum(amount)) %>%  
+  arrange(desc(total))
+```
+```{r}
+Mcities <- mainePPP %>% 
+  mutate(project_city = str_to_title(project_city))%>% 
+  group_by(project_city) %>%
+  summarise(total=n()) %>% 
+  arrange(desc(total))
+
+```
+```{r}
+lender_city <- mainePPP %>% 
+  group_by(originating_lender_city) %>% 
+  summarise(total=n()) %>% 
+  arrange(desc(total))
+```
+```{r}
+retained <- mainePPP %>% 
+    group_by(project_county_name) %>% 
+  summarise(total_loans=n(), total_jobs = sum(jobs_retained))%>% 
+  arrange(desc(total_jobs))
+```
+```{r}
+zip_loan <- mainePPP %>%
+   group_by(project_zip) %>%
+   summarise(total=n()) %>% 
+  arrange(desc(total))
+``` 
+A1: Within this question, my goal was to gain basic information about the Maine PPP data that I could use in order to inform the rest of the project. This included grouping Maine counties by total loan amounts and total loans, finding the amount of per city based on lenders, total jobs retained and loans based on county and the amount of loans per zip code as well. While finding this data, I determined that zip code 04101 had the most loans of any Maine zip code with 2073. Cumberland county retained the most jobs by a wide margin, followed by York county. Regarding loans originating location based on lender, Bangor had the most lenders originating there with 6,988. However, Portland had the most loans in genera, by city with 4,167. These numbers are important because they provide context to which areas received the most loans, classified by a few geographic metrics. 
+## Geographic Analysis
+
+**Q2.** Write R code that examines geographic patterns for PPP loans in your state, using Census population information to calculate a per-capita figure for the state and counties and zip codes. Then, make a county map using ggplot showing the per-capita data and a zip code map showing the difference from the statewide per-capita figure. Describe the most interesting or newsworthy findings based on your exploration. LAB 11 ZIP CODES Lab 8
+```{r}
+me_county_pop <- get_acs(geography = "county", 
+              variables = c(population = "B01001_001"), 
+              state = "ME",
+       geometry = TRUE)
+```
+```{r}
+me_zip_pop <- get_acs(geography = "zcta", 
+              variables = c(population = "B01001_001"), 
+              state = "ME",
+       geometry = TRUE)
+
+me_pop <-  get_acs(geography = "state", variables = "B01001_001", year = 2019, geometry = TRUE) %>% 
+  filter(NAME == "Maine")
+
+me_total <- mainePPP %>% 
+  summarise(count=n())
+
+statewide_per_cap <- me_pop %>% 
+  mutate(
+    per_cap = me_total$count / me_pop$estimate
+  )
+```
+
+```{r}
+  maine_county_pop <- me_county_pop %>% 
+  rename(COUNTY = NAME) %>%
+  mutate(COUNTY = toupper(str_remove_all(COUNTY,", Maine|County"))) %>%
+  mutate(COUNTY = str_trim(COUNTY,side="both")) %>%
+  rename(population = estimate) %>%
+  select(COUNTY, population, geometry)
+```
+```{r}
+ me_per_capita<- me_loans_per100k%>%
+  mutate(
+    per_capita = total_loans/population
+  )
+```
+
+
+```{r}
+left_join(Mcounties, by=c("COUNTY" = "project_county_name")) 
+  
+
+```
+```{r}
+ggplot() + 
+  geom_sf(data=me_per_capita, aes(fill=per_capita)) + 
+  theme_minimal()+
+  scale_fill_viridis_b(option="magma",trans = "log") 
+```
+```{r}
+me_loans_100k <- me_loans_per100k %>% 
+  mutate(loans_per_100k = total_loan_amounts/population*100000) %>%
+  arrange(desc(loans_per_100k))
+```
+```{r}
+mainePPP <- mainePPP %>% 
+  mutate(zip5 = str_sub(zip, start=1L, end=5L))
+```
+```{r}
+zip_loan <- zip_loan %>% 
+  mutate(project_zip = str_sub(project_zip, start = 1L, end = 5L)) %>% 
+  rename(GEOID = project_zip) %>% 
+  group_by(GEOID) %>% 
+  summarise(total=sum(total))
+
+zip_per_cap <- me_zip_pop %>% 
+  left_join(zip_loan, by = "GEOID") %>% 
+  mutate(per_cap = total/estimate,
+         per_cap_diff = statewide_per_cap$per_cap - per_cap)
+```
+```{r}
+me_blank <- counties() %>% 
+  filter(STATEFP == 23)
+
+ggplot() + 
+  geom_sf(data=me_blank, fill = "white")+
+  geom_sf(data=zip_per_cap, aes(fill=per_cap_diff)) + 
+  theme_minimal()+
+  scale_fill_viridis_b(option="magma",trans = "log") 
+```
+
+**A2.** 
+For the first graphic created, the goal was to highlight per capita loan data based on Maine counties. This was determined by dividing total loans by population per county, giving us an index that was used to formulate the image. The range of the loans per capita ranged from the most being Hancock with .072 and the least being 0.19 for Somerset. Based on the data and the color coordination of the map, most counties fall between .02 and .04 in terms of loans per capita. Also, based on the eye test, it seems that the further north into Maine one goes, the loans per capita decreased.Regarding the second graphic, the goal was to show the difference from the statewide per-capita figure and zip code per-capita figure. The lowest difference per capita between zip and state average 04442, which was -1.1 lower then the state average. The highest differential was 0.34, belonging to zipcode 04469. Based on the map, it appears that most Maine zipcodes falls above .0024. This comparison is important because it provides context to the overall state data, visualizing which zipcodes benefited most and least from PPP loans. 
+
+## Lender Analysis
+
+**Q3.** Write R code to examine which lenders had the most approved applications in your state (and include summary statistics such as total amount and average loan amount). Generate dataframes that show the number and total amount of all loans and undisbursed loans per lender. For those lenders who had any undisbursed loans, make a graphic showing the relationship between the total amount of loans and the total undisbursed amount. Describe the most noticeable outlier lenders on that graphic below.
+
+**A3.** 
+```{r}
+lenders <- mainePPP %>% 
+    group_by(lender) %>% 
+  summarise(total_loans=n(), total_loan_amounts = sum(amount), total_undisbursed = sum(undisbursed_amount))%>% 
+  arrange(desc(total_undisbursed))
+```
+```{r}
+lender_loan<- mainePPP %>% 
+group_by(amount, lender) %>% 
+  summarise(total_loans=n())
+
+```
+```{r}
+lender_minmax<- mainePPP %>% 
+  group_by(lender) %>%
+  summarise(min_amount = min(amount), max_amount= max(amount), total_loans =n(), total_amount_loans =sum(amount), average_amount =mean(amount))
+
+```
+```{r}
+lender_minmax %>% 
+ggplot() + 
+  geom_line(aes(x=average_amount, y=total_loans)) +
+  theme(
+    axis.text.x = element_text(angle = 45,  hjust=1)
+  ) +
+labs(
+ title="Maine Loans per Amount",
+    x = "Average Loan Amount",
+    y = "Number of Loans",)
+
+```
+A3: For this question, the goal was to highlight lenders in Maine to get a better understanding of how many loans each lender gave out, and the average amount of each of those loans. By graphing this, it became clear that besides the extremes, most of the average loan amounts and the number of loans fell into a similar statistical bracket. However, as the graph portrays, there are several extremes that leads to the chart looking like it does. The minimum average loan amount was 1250 by the Bank of Millbrook. On the other hand, the maximum average loan amount was 2174457.00 by First Merchants Bank. This is a major discrepancy that skews the axis, however is important to understanding the full scope of the data. 
+
+The axis' are also skewed because of the average number of loans, with some lenders only handing out a singular loan compared to the leading lender, Bangor Savings Bank with 6939 loans given out. Based on calculations made previously of this full set of data, across the state, there were 47,407 loans given out across the state. The average amount of each loan was 68,629, totaling 325354958 in loans across the state. Based on these averages, Bangor Savings Bank, who totaled the most loans given out, is just above the state average, making them a fair represntaion of the overall data. Generally speaking, most lenders either gave out a large amount of loans for a smaller amount or less loans for a larger amount, with outliers on both ends of the spectrum. 
+## Industry Analysis
+
+**Q4.** Write R code that examines industry patterns for PPP loans in your state, using the NAICS codes from the PPP data as a starting point. Generate statewide and county industry totals, then join that with 2018-19 data from the [Census County Business Patterns survey](https://www2.census.gov/programs-surveys/cbp/datasets/2019/cbp19co.zip) using 6-digit NAICS codes. The documentation explaining that data can be found here: https://www2.census.gov/programs-surveys/cbp/technical-documentation/records-layouts/2018_record_layouts/county-layout-2018.txt. To do this, you will need to add FIPS codes to your PPP dataset.
+```{r}
+ CBP_naics<-read_csv("/Users/mikecharles/Downloads/cbp19co.csv")
+
+all_fips <- fips_codes %>% as_tibble()
+me_fips <- all_fips %>% filter(state == 'ME')
+
+me_fips <- me_fips %>% mutate(fips_code = str_c(state_code, county_code))
+
+  me_fips <- me_fips %>% 
+    mutate(county = str_to_upper(county)) %>%
+   mutate(county = str_replace(match_county, ' COUNTY', '')) %>%
+  left_join(me_fips, mainePPP by=c("fips_code" = "project_county_name")
+```
+
+Does the distribution of PPP applications by the top 10 industries (by number of applications) roughly match the number of businesses reported in the Census data? Does it roughly match if you remove self-employed individuals and sole proprietorships from the PPP totals? Write up a summary of what you've found and whether there are potentially newsworthy patterns in the data.
+
+Create a county-level map showing the differences between the PPP applications and the Census business data for one of the top 10 industry codes. You can do this either using ggplot or Datawrapper (if the latter, publish that map and include the URL below).
+
+**A4.** 
+
+## Summary
+
+**Q5.** What is the most promising story idea that you have found during this exploration? How would you approach reporting it out and what other information/data would you need to do that? What would be the minimum story you could get from this, and what would be the maximum story?
+
+**A5.**
