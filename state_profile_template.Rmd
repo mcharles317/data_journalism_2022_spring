@@ -13,6 +13,7 @@ library(lubridate)
 library(ggrepel)
 library(sf)
 library(tigris)
+library(tidycensus)
 ```
 ```{r}
 mainePPP <- read_csv ("/Users/mikecharles/Downloads/maine_ppp.csv") 
@@ -212,12 +213,36 @@ me_fips <- all_fips %>% filter(state == 'ME')
 me_fips <- me_fips %>% mutate(fips_code = str_c(state_code, county_code))
 
   me_fips <- me_fips %>% 
-    mutate(county = str_to_upper(county)) %>%
-   mutate(county = str_replace(match_county, ' COUNTY', '')) %>%
-  left_join(me_fips, mainePPP by=c("fips_code" = "project_county_name")
+    mutate(county = str_to_upper(county))%>%
+      mutate(county = str_replace(county, ' COUNTY', ''))
+   PPPfips<- me_fips %>%
+  left_join(mainePPP, by=c("county" = "project_county_name"))
+```
+```{r}
+CBPnaics_clean <- CBP_naics %>% 
+  filter(!str_detect(naics, "-")) %>% 
+   filter(!str_detect(naics, "/"))
 ```
 
+```{r}
+PPPfips %>% 
+  group_by(naics_code) %>% 
+  summarise(total=n()) %>% 
+    arrange(desc(total)) %>% 
+head(10)
+
+```
+```{r}
+CBPnaics_clean %>% 
+   filter(str_length(naics) == 6)%>%
+   group_by(naics, fipstate =23) %>% 
+  summarise(total=n()) %>% 
+arrange(desc(total)) %>% 
+head(10)
+```
 Does the distribution of PPP applications by the top 10 industries (by number of applications) roughly match the number of businesses reported in the Census data? Does it roughly match if you remove self-employed individuals and sole proprietorships from the PPP totals? Write up a summary of what you've found and whether there are potentially newsworthy patterns in the data.
+Do total applications match amount of businesses in CBP?
+
 
 Create a county-level map showing the differences between the PPP applications and the Census business data for one of the top 10 industry codes. You can do this either using ggplot or Datawrapper (if the latter, publish that map and include the URL below).
 
