@@ -240,6 +240,11 @@ CBPnaics_clean %>%
 arrange(desc(total)) %>% 
 head(10)
 ```
+```{r}
+
+
+```
+
 Does the distribution of PPP applications by the top 10 industries (by number of applications) roughly match the number of businesses reported in the Census data? Does it roughly match if you remove self-employed individuals and sole proprietorships from the PPP totals? Write up a summary of what you've found and whether there are potentially newsworthy patterns in the data.
 Do total applications match amount of businesses in CBP?
 
