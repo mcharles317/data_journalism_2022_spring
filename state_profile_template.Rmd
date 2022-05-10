@@ -108,18 +108,18 @@ statewide_per_cap <- me_pop %>%
   rename(population = estimate) %>%
   select(COUNTY, population, geometry)
 ```
+
+
 ```{r}
- me_per_capita<- me_county_pop%>%
+pop_loans <- maine_county_pop %>% left_join(Mcounties, by=c("COUNTY" = "project_county_name")) 
+  
+
+```
+```{r}
+me_per_capita <- pop_loans %>% 
   mutate(
     per_capita = total_loans/population
   )
-```
-
-
-```{r}
-left_join(Mcounties, by=c("COUNTY" = "project_county_name")) 
-  
-
 ```
 ```{r}
 ggplot() + 
@@ -128,7 +128,7 @@ ggplot() +
   scale_fill_viridis_b(option="magma",trans = "log") 
 ```
 ```{r}
-me_loans_100k <- me_loans_per100k %>% 
+me_loans_100k <- me_per_capita %>% 
   mutate(loans_per_100k = total_loan_amounts/population*100000) %>%
   arrange(desc(loans_per_100k))
 ```
