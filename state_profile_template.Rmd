@@ -109,7 +109,7 @@ statewide_per_cap <- me_pop %>%
   select(COUNTY, population, geometry)
 ```
 ```{r}
- me_per_capita<- me_loans_per100k%>%
+ me_per_capita<- me_county_pop%>%
   mutate(
     per_capita = total_loans/population
   )
@@ -200,7 +200,7 @@ labs(
 ```
 A3: For this question, the goal was to highlight lenders in Maine to get a better understanding of how many loans each lender gave out, and the average amount of each of those loans. By graphing this, it became clear that besides the extremes, most of the average loan amounts and the number of loans fell into a similar statistical bracket. However, as the graph portrays, there are several extremes that leads to the chart looking like it does. The minimum average loan amount was 1250 by the Bank of Millbrook. On the other hand, the maximum average loan amount was 2174457.00 by First Merchants Bank. This is a major discrepancy that skews the axis, however is important to understanding the full scope of the data. 
 
-The axis' are also skewed because of the average number of loans, with some lenders only handing out a singular loan compared to the leading lender, Bangor Savings Bank with 6939 loans given out. Based on calculations made previously of this full set of data, across the state, there were 47,407 loans given out across the state. The average amount of each loan was 68,629, totaling 325354958 in loans across the state. Based on these averages, Bangor Savings Bank, who totaled the most loans given out, is just above the state average, making them a fair represntaion of the overall data. Generally speaking, most lenders either gave out a large amount of loans for a smaller amount or less loans for a larger amount, with outliers on both ends of the spectrum. 
+The axis' are also skewed because of the average number of loans, with some lenders only handing out a singular loan compared to the leading lender, Bangor Savings Bank with 6939 loans given out. Based on calculations made previously of this full set of data, across the state, there were 47,407 loans given out across the state. The average amount of each loan was 68,629, totaling 325354958 in loans across the state. Based on these averages, Bangor Savings Bank, who totaled the most loans given out, is just above the state average, making them a fair representation of the overall data. Generally speaking, most lenders either gave out a large amount of loans for a smaller amount or less loans for a larger amount, with outliers on both ends of the spectrum. 
 ## Industry Analysis
 
 **Q4.** Write R code that examines industry patterns for PPP loans in your state, using the NAICS codes from the PPP data as a starting point. Generate statewide and county industry totals, then join that with 2018-19 data from the [Census County Business Patterns survey](https://www2.census.gov/programs-surveys/cbp/datasets/2019/cbp19co.zip) using 6-digit NAICS codes. The documentation explaining that data can be found here: https://www2.census.gov/programs-surveys/cbp/technical-documentation/records-layouts/2018_record_layouts/county-layout-2018.txt. To do this, you will need to add FIPS codes to your PPP dataset.
@@ -230,31 +230,68 @@ PPPfips %>%
   summarise(total=n()) %>% 
     arrange(desc(total)) %>% 
 head(10)
+```
+```{r}
+CountyNaics<- PPPfips %>% 
+  filter(naics_code == "114112") %>% 
+  group_by(county, fips_code) %>% 
+  summarise(total=n()) %>% 
+  arrange(desc(total))
+
+```
+!!!114112!!!
+```{r}
+NaicsCBP <- CBPnaics_clean %>% 
+  mutate(fips_code = str_c(fipstate, fipscty))
 
 ```
 ```{r}
-CBPnaics_clean %>% 
-   filter(str_length(naics) == 6)%>%
-   group_by(naics, fipstate =23) %>% 
+NaicsCBP %>% 
+   filter(str_length(naics) == 6, fipstate == 23)%>%
+   group_by(naics) %>% 
   summarise(total=n()) %>% 
 arrange(desc(total)) %>% 
 head(10)
 ```
 ```{r}
-
+naics_by_county<- NaicsCBP %>% 
+   filter(naics == "114112", fipstate == 23) %>% 
+  group_by(fips_code) %>% 
+  summarise(businesses = sum(est))
+  
+```
+```{r}
+combined_shellfish<- full_join(
+  CountyNaics,
+  naics_by_county
+)
+```
+```{r}
+combined_shellfish <-combined_shellfish %>% 
+  mutate(businesses = replace_na(businesses, 0)) %>% 
+  mutate(difference = total-businesses)
 
 ```
+```{r}
+write.csv(combined_shellfish, file = "combined_shellfish.csv")
+```
+
 
 Does the distribution of PPP applications by the top 10 industries (by number of applications) roughly match the number of businesses reported in the Census data? Does it roughly match if you remove self-employed individuals and sole proprietorships from the PPP totals? Write up a summary of what you've found and whether there are potentially newsworthy patterns in the data.
 Do total applications match amount of businesses in CBP?
 
 
 Create a county-level map showing the differences between the PPP applications and the Census business data for one of the top 10 industry codes. You can do this either using ggplot or Datawrapper (if the latter, publish that map and include the URL below).
+813110
+
 
 **A4.** 
+https://datawrapper.dwcdn.net/SRuSG/1/
 
+No, this distribution of PPP applications by the top 10 industries does not roughly match the number of business reported in the Census data. Even if you remove self-employed individuals, there is still a discrepancy. Of all the counties with eligible businesses according to census data, Hancock county had the largest difference with a 788 application difference. Last of the eligible counties, again according to census data, was Sagadahoc. This is newsworthy because it means that businesses that the census was unaware of applied for PPP loans, without the data being collected obviously. I expected the numbers to be close due to their grouping, however this was not the case. 
 ## Summary
 
 **Q5.** What is the most promising story idea that you have found during this exploration? How would you approach reporting it out and what other information/data would you need to do that? What would be the minimum story you could get from this, and what would be the maximum story?
 
 **A5.**
+The biggest story,in my opinion, is the significant discrepancy between the PPP applications by the top 10 industries and the number of business reported in the Census data. Regardless of which industry chosen, there was a discrepancy proving an error in either the PPP data or the Census Business Data. In my opinion, it is more likely that the census business data is incorrect, which would be the story. In order to verify that information, I could verify the information with the PPP applications, which would prove that the census data is incorrect. However, I would obviously need the perspective of the census business so they could explain how such a difference is possible. At the bare minimum, the story could highlight businesses missing in the census data, highlight the total gap between data sets and explain the different possibilities that could cause a discrepancy. At the maximum, having successful encounters with sources, this story would explain exactly how this discrepancy was caused. It would also feature anecdotes that support it, conversations with busienesses and increased statistical depth. 

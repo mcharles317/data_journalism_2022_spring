@@ -154,7 +154,7 @@ Let's do the latter. We'll use mutate to create an uppercase version of the name
 md_fips <- md_fips %>% mutate(match_county = str_to_upper(county)) %>%
    mutate(match_county = str_replace(match_county, ' COUNTY', '')) %>%
    mutate(match_county = str_replace(match_county, "'", "")) %>%
-   mutate(match_county = str_replace(match_county, "ST. MARY", "SAINT MARY"))
+
 ```
 
 **Task** Now we'll join `md_counties` and `md_fips` together using our new `match_county` column:
